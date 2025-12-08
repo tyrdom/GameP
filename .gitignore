@@ -1,0 +1,22 @@
+Project/.idea
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/.vs/
+/.vscode/
+/*.csproj
+/*.sln
+/*.suo
+/*.userprefs
+
+# macOS
+.DS_Store
+
+# 保留必要的
+!/[Pp]ackages/manifest.json
+!/[Pp]ackages/packages-lock.json
