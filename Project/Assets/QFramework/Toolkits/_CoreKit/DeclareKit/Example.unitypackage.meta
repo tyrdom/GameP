@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 921cbf26409b3dc42bced514dfbc0294
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 93872
+  packageName: QFramework Pro-Toolkits for Game/App/Tool Making
+  packageVersion: v0.4.39
+  assetPath: Assets/QFramework/Toolkits/_CoreKit/DeclareKit/Example.unitypackage
+  uploadId: 746999
