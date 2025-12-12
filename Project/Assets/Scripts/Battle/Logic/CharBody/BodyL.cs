@@ -173,6 +173,9 @@ public class BodyL
             return;
         }
         
+        mediaL.OnEffect();
+        
+        
         
     }
 

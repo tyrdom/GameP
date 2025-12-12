@@ -15,6 +15,7 @@ namespace Battle.Logic.Media
 
         public readonly MediaMono MediaMono;
 
+        private AtkDirType _atkDirType;
         private int _lifeTime = 0;
         private int _hitCd = 0;
 
@@ -33,7 +34,7 @@ namespace Battle.Logic.Media
 
         public static MediaL Alloc(InstanceMediaInfo instanceCharInfo, OwnerInfo ownerInfo)
         {
-            var allocate = BattleLogicMgr.Instance.MediaPool.Allocate(instanceCharInfo.cfgId);
+            var allocate = BattleLogicMgr.Instance.MediaPool.Allocate(instanceCharInfo.CfgId);
             allocate.Instance(instanceCharInfo, ownerInfo);
             return allocate;
         }
@@ -47,11 +48,11 @@ namespace Battle.Logic.Media
 
         private void Instance(InstanceMediaInfo instanceMediaInfo, OwnerInfo ownerInfo)
         {
-            InstanceId = instanceMediaInfo.instanceId;
+            InstanceId = instanceMediaInfo.InstanceId;
             Owner = ownerInfo.Owner;
             Owner.TempMediaList.Add(this);
             MediaMono.gameObject.name = $"{Cfg.Alias}_{InstanceId}";
-
+            _atkDirType = instanceMediaInfo.AtkDirType;
             _lifeTime = Cfg.Duration;
             _hitCount = Cfg.HitMaxCount > 0 ? Cfg.HitMaxCount : int.MaxValue;
         }
@@ -89,7 +90,7 @@ namespace Battle.Logic.Media
 
             HighSpeedColliderCheck();
 
-            bool alive = CheckLifeTime();
+            var alive = CheckLifeTime();
             if (alive)
             {
                 DoMovement();
@@ -162,15 +163,17 @@ namespace Battle.Logic.Media
         }
     }
 
-    public struct InstanceMediaInfo
+    public readonly struct InstanceMediaInfo
     {
-        public int cfgId;
-        public int instanceId;
+        public readonly int CfgId;
+        public readonly int InstanceId;
+        public readonly AtkDirType AtkDirType;
 
-        public InstanceMediaInfo(int cfgId, int instanceId)
+        public InstanceMediaInfo(int cfgId, int instanceId, AtkDirType atkDirType)
         {
-            this.cfgId = cfgId;
-            this.instanceId = instanceId;
+            CfgId = cfgId;
+            InstanceId = instanceId;
+            AtkDirType = atkDirType;
         }
     }
 }

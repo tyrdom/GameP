@@ -20,6 +20,7 @@ public sealed partial class LauncherCfg : Luban.BeanBase
         OffSetXInt = _buf.ReadInt();
         OffSetZInt = _buf.ReadInt();
         RotateY = _buf.ReadInt();
+        AtkDir = (AtkDirType)_buf.ReadInt();
         {int __n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);MediaAlias = new string[__n0];for(var __index0 = 0 ; __index0 < __n0 ; __index0++) { string __e0;__e0 = _buf.ReadString(); MediaAlias[__index0] = __e0;}}
     }
 
@@ -32,6 +33,7 @@ public sealed partial class LauncherCfg : Luban.BeanBase
     public readonly int OffSetXInt;
     public readonly int OffSetZInt;
     public readonly int RotateY;
+    public readonly AtkDirType AtkDir;
     public readonly string[] MediaAlias;
    
     public const int __ID__ = 1443232900;
@@ -48,6 +50,7 @@ public sealed partial class LauncherCfg : Luban.BeanBase
         + "offSetXInt:" + OffSetXInt + ","
         + "offSetZInt:" + OffSetZInt + ","
         + "rotateY:" + RotateY + ","
+        + "atkDir:" + AtkDir + ","
         + "mediaAlias:" + Luban.StringUtil.CollectionToString(MediaAlias) + ","
         + "}";
     }

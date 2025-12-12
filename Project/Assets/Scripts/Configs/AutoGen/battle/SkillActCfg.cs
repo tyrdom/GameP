@@ -20,9 +20,11 @@ public sealed partial class SkillActCfg : Luban.BeanBase
         Alias = _buf.ReadString();
         FromWeaponId = _buf.ReadInt();
         SpCost = _buf.ReadInt();
-        AutoCounterSkillAlias = (ActStatus)_buf.ReadInt();
         ParryPauseTime = _buf.ReadInt();
+        ParryWindow = _buf.ReadInt();
+        DodgeWindow = _buf.ReadInt();
         BaseTough = _buf.ReadInt();
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);SelfEffectAlias = new System.Collections.Generic.List<string>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); SelfEffectAlias.Add(_e0);}}
         LockMediaAlias = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);LaunchTimeToMediaAlias = new System.Collections.Generic.List<LauncherCfg>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { LauncherCfg _e0;  _e0 = global::cfg.LauncherCfg.DeserializeLauncherCfg(_buf); LaunchTimeToMediaAlias.Add(_e0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);MoveChangeTimeS = new System.Collections.Generic.List<MovementChangeCfg>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { MovementChangeCfg _e0;  _e0 = global::cfg.MovementChangeCfg.DeserializeMovementChangeCfg(_buf); MoveChangeTimeS.Add(_e0);}}
@@ -42,9 +44,11 @@ public sealed partial class SkillActCfg : Luban.BeanBase
     public readonly string Alias;
     public readonly int FromWeaponId;
     public readonly int SpCost;
-    public readonly ActStatus AutoCounterSkillAlias;
     public readonly int ParryPauseTime;
+    public readonly int ParryWindow;
+    public readonly int DodgeWindow;
     public readonly int BaseTough;
+    public readonly System.Collections.Generic.List<string> SelfEffectAlias;
     public readonly string LockMediaAlias;
     public readonly System.Collections.Generic.List<LauncherCfg> LaunchTimeToMediaAlias;
     public readonly System.Collections.Generic.List<MovementChangeCfg> MoveChangeTimeS;
@@ -70,9 +74,11 @@ public sealed partial class SkillActCfg : Luban.BeanBase
         + "alias:" + Alias + ","
         + "fromWeaponId:" + FromWeaponId + ","
         + "spCost:" + SpCost + ","
-        + "autoCounterSkillAlias:" + AutoCounterSkillAlias + ","
         + "parryPauseTime:" + ParryPauseTime + ","
+        + "parryWindow:" + ParryWindow + ","
+        + "dodgeWindow:" + DodgeWindow + ","
         + "baseTough:" + BaseTough + ","
+        + "SelfEffectAlias:" + Luban.StringUtil.CollectionToString(SelfEffectAlias) + ","
         + "lockMediaAlias:" + LockMediaAlias + ","
         + "launchTimeToMediaAlias:" + Luban.StringUtil.CollectionToString(LaunchTimeToMediaAlias) + ","
         + "moveChangeTimeS:" + Luban.StringUtil.CollectionToString(MoveChangeTimeS) + ","

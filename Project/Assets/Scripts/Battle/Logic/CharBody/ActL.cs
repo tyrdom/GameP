@@ -11,9 +11,8 @@ public class ActL
     private WeaponTypeCfg _currentWeaponType;
 
     private SkillActCfg _currentSkillCfg;
-    
-    
 
+    private SkillExtraCfg _currentSkillExtraCfg;
     public readonly BodyL BodyL;
 
     private ActStatus _nowActStatus = ActStatus.IdleOrWalk;
@@ -23,6 +22,8 @@ public class ActL
     public int NowMovIdx;
 
     public int NowMediaLaunchIdx;
+
+    public int CurActTough;
 
     public void UpATick()
     {
@@ -37,17 +38,36 @@ public class ActL
 
         if (_currentSkillCfg != null && _currentSkillCfg.SkillMaxTime <= CurrentActTime)
         {
-            DoChangeMovement();
-
-            var launchTimeToMediaAlia = _currentSkillCfg.LaunchTimeToMediaAlias[NowMediaLaunchIdx];
-            if (launchTimeToMediaAlia.LaunchTime <= CurrentActTime)
-            {
-                NowMediaLaunchIdx++;
-                DoSkillActMediaLaunch(launchTimeToMediaAlia);
-            }
-
-            CurrentActTime += BattleLogicMgr.upTickDeltaTimeMs;
+            UpNowSkill();
         }
+    }
+
+    private void UpNowSkill()
+    {
+        DoChangeMovement();
+
+        var launchTimeToMediaAlia = _currentSkillCfg.LaunchTimeToMediaAlias[NowMediaLaunchIdx];
+
+        if (launchTimeToMediaAlia.LaunchTime <= CurrentActTime)
+        {
+            NowMediaLaunchIdx++;
+            DoSkillActMediaLaunch(launchTimeToMediaAlia);
+        }
+
+
+        if (CurrentActTime == 0)
+        {
+            CurActTough = _currentSkillCfg.BaseTough == 0
+                ? _currentSkillExtraCfg.FirstLaunchBaseTough
+                : _currentSkillCfg.BaseTough;
+        }
+        else
+        {
+            CurActTough += GameConfigs.Instance.Tables.TbCommonCfg.TickToughGrow;
+        }
+
+
+        CurrentActTime += BattleLogicMgr.upTickDeltaTimeMs;
     }
 
     private void DoChangeMovement()
@@ -73,22 +93,32 @@ public class ActL
     private void DoSkillActMediaLaunch(LauncherCfg launchCfg)
     {
         var offSet = new Vector3(launchCfg.OffSetXInt / 1000f, 0, launchCfg.OffSetZInt / 1000f);
+        var launchCfgRotateY = launchCfg.RotateY;
+        var launchCfgAtkDir = launchCfg.AtkDir;
         foreach (var launchCfgMediaAlia in launchCfg.MediaAlias)
         {
-            var mediaCfg = GameConfigs.Instance.Tables.TbMediaCfg.GetByAlias(launchCfgMediaAlia);
-            if (mediaCfg == null)
-            {
-                throw new System.Exception($"MediaCfg is null check cfg{launchCfgMediaAlia}");
-            }
-
-            var mediaCfgId = mediaCfg.Id;
-            var instanceMediaInfo = new InstanceMediaInfo
-                (mediaCfgId, BattleLogicMgr.Instance.GenerateId(GOType.Media));
-            var ownerInfo = new OwnerInfo(BodyL);
-
-            var mediaL = MediaL.Alloc(instanceMediaInfo, ownerInfo);
-            LaunchMedia(mediaL, offSet, launchCfg.RotateY, BodyL);
+            LaunchAMedia(launchCfgMediaAlia, launchCfgAtkDir, offSet, launchCfgRotateY);
         }
+    }
+
+    private void LaunchAMedia(string launchCfgMediaAlia, AtkDirType launchCfgAtkDir, Vector3 offSet,
+        int launchCfgRotateY)
+    {
+        var mediaCfg = GameConfigs.Instance.Tables.TbMediaCfg.GetByAlias(launchCfgMediaAlia);
+        if (mediaCfg == null)
+        {
+            throw new Exception($"MediaCfg is null check cfg{launchCfgMediaAlia}");
+        }
+
+        var mediaCfgId = mediaCfg.Id;
+
+        var instanceMediaInfo = new InstanceMediaInfo
+            (mediaCfgId, BattleLogicMgr.Instance.GenerateId(GOType.Media), launchCfgAtkDir);
+        var ownerInfo = new OwnerInfo(BodyL);
+
+        var mediaL = MediaL.Alloc(instanceMediaInfo, ownerInfo);
+
+        LaunchMedia(mediaL, offSet, launchCfgRotateY, BodyL);
     }
 
     private static void LaunchMedia(MediaL mediaL, Vector3 offSet, int rotateY, BodyL bodyL)
@@ -141,7 +171,12 @@ public class ActL
                            throw new Exception($"SkillActCfg is null check cfg{skillActCfg.SkillActAlias}");
         CurrentActTime = 0;
         _nowActStatus = skillActCfg.NextComboStatus;
+        _currentSkillExtraCfg = GameConfigs.Instance.SkillExtraCfgS[skillActCfg.SkillActAlias];
+
+        var lockMediaAlias = _currentSkillCfg.LockMediaAlias;
+        LaunchAMedia(lockMediaAlias, AtkDirType.Other, Vector3.zero, 0);
     }
+
 
     private bool CanLaunchSkill()
     {
