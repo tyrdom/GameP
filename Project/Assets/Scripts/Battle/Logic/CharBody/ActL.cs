@@ -180,7 +180,7 @@ public class ActL
 
     private bool CanLaunchSkill()
     {
-        var bodyLActive = BodyL.StunBuff == null && BodyL.Alive;
+        var bodyLActive = BodyL.StunBuff == null && BodyL.BodyStatus == BodyStatus.Active;
         var b = _currentSkillCfg == null || _currentSkillCfg.SkillMustTime <= CurrentActTime;
         return bodyLActive && b;
     }
@@ -207,5 +207,30 @@ public class ActL
         NowMovIdx = 0;
         _nowActStatus = ActStatus.IdleOrWalk;
         BodyL.BodyMono.skillMoveVelocity = Vector3.zero;
+    }
+
+    public void JudgeAtk(MediaL mediaL)
+    {
+        var b1 = BodyL.BodyStatus == BodyStatus.Disable;
+        if (b1)
+        {
+            return;
+        }
+
+        var b2 = BodyL.BodyStatus == BodyStatus.Dead;
+        {
+            //todo deadBody    
+        }
+
+        var b = BodyL.StunBuff != null;
+        if (b)
+        {
+        }
+
+        var maxTough = GameConfigs.Instance.Tables.TbCommonCfg.MaxTough;
+        var minTough = GameConfigs.Instance.Tables.TbCommonCfg.MinTough;
+        var b3 = mediaL.AtkTough < minTough;
+
+        throw new NotImplementedException();
     }
 }

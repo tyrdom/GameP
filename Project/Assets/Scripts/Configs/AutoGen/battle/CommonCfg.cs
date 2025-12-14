@@ -23,6 +23,9 @@ public sealed partial class CommonCfg : Luban.BeanBase
         AvgActTime = _buf.ReadInt();
         Friction = _buf.ReadInt();
         DrawStunAlias = _buf.ReadString();
+        MinTough = _buf.ReadInt();
+        MaxTough = _buf.ReadInt();
+        MidTough = _buf.ReadInt();
     }
 
     public static CommonCfg DeserializeCommonCfg(ByteBuf _buf)
@@ -55,6 +58,18 @@ public sealed partial class CommonCfg : Luban.BeanBase
     /// 判定平局触发的效果
     /// </summary>
     public readonly string DrawStunAlias;
+    /// <summary>
+    /// 低于minTough对于非Stun目标直接判负
+    /// </summary>
+    public readonly int MinTough;
+    /// <summary>
+    /// 高于或等于maxTough对于目标判胜
+    /// </summary>
+    public readonly int MaxTough;
+    /// <summary>
+    /// 中间值，大于等于此值，非攻击状态可以接住此攻击
+    /// </summary>
+    public readonly int MidTough;
    
     public const int __ID__ = -753315677;
     public override int GetTypeId() => __ID__;
@@ -73,6 +88,9 @@ public sealed partial class CommonCfg : Luban.BeanBase
         + "avgActTime:" + AvgActTime + ","
         + "friction:" + Friction + ","
         + "DrawStunAlias:" + DrawStunAlias + ","
+        + "minTough:" + MinTough + ","
+        + "maxTough:" + MaxTough + ","
+        + "midTough:" + MidTough + ","
         + "}";
     }
 }

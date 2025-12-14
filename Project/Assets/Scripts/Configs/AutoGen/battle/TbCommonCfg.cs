@@ -52,6 +52,18 @@ public partial class TbCommonCfg
     /// 判定平局触发的效果
     /// </summary>
      public string DrawStunAlias => _data.DrawStunAlias;
+    /// <summary>
+    /// 低于minTough对于非Stun目标直接判负
+    /// </summary>
+     public int MinTough => _data.MinTough;
+    /// <summary>
+    /// 高于或等于maxTough对于目标判胜
+    /// </summary>
+     public int MaxTough => _data.MaxTough;
+    /// <summary>
+    /// 中间值，大于等于此值，非攻击状态可以接住此攻击
+    /// </summary>
+     public int MidTough => _data.MidTough;
     
     public void ResolveRef(Tables tables)
     {

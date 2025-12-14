@@ -15,6 +15,7 @@ namespace Battle.Logic.Media
 
         public readonly MediaMono MediaMono;
 
+        public int AtkTough;
         private AtkDirType _atkDirType;
         private int _lifeTime = 0;
         private int _hitCd = 0;
@@ -55,6 +56,7 @@ namespace Battle.Logic.Media
             _atkDirType = instanceMediaInfo.AtkDirType;
             _lifeTime = Cfg.Duration;
             _hitCount = Cfg.HitMaxCount > 0 ? Cfg.HitMaxCount : int.MaxValue;
+            AtkTough = Cfg.CustemToughPower == 0 ? Owner.GetNowTough() : Cfg.CustemToughPower;
         }
 
         private void Reset()

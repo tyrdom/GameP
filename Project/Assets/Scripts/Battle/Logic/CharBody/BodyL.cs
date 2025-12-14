@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Battle.Logic;
 using Battle.Logic.AllManager;
@@ -7,6 +8,7 @@ using Battle.Logic.Media;
 using cfg;
 using cfg.battle;
 using Configs;
+using UnityEditor;
 using UnityEngine;
 
 public class BodyL
@@ -31,7 +33,8 @@ public class BodyL
 
     public List<MediaL> TempMediaList = new();
 
-    public bool Alive;
+    public BodyStatus BodyStatus;
+
 
 
     public static BodyL CreateBlank(int cfgId)
@@ -93,7 +96,7 @@ public class BodyL
     {
         InstanceId = instanceCharInfo.instanceId;
         Team = instanceCharInfo.team;
-        Alive = true;
+        BodyStatus = BodyStatus.Active;
         BodyMono.gameObject.name = Cfg.Alias + "_" + InstanceId;
     }
 
@@ -172,24 +175,37 @@ public class BodyL
         {
             return;
         }
-        
+
         mediaL.OnEffect();
-        
-        
-        
+        if (mediaL.Cfg.MediaType is MediaType.Melee
+            || mediaL.Cfg.MediaType is MediaType.Range)
+        {
+            ActL.JudgeAtk(mediaL);
+        }
     }
 
     public void DoSkillActMoveChange(MovementChangeCfg movementChangeCfg, int lastMoveTime)
     {
-        
         BodyMono.SetSkillVelocity(movementChangeCfg, lastMoveTime);
-  
     }
 
     public void RemoveStatusBuff(StatusBuff statusBuff)
     {
         StatusBuffDict.Remove(statusBuff.SkillEffectConfig.Alias);
     }
+
+    public int GetNowTough()
+    {
+        return ActL.CurActTough;
+    }
+}
+
+public enum BodyStatus
+
+{
+    Active,
+    Disable,
+    Dead
 }
 
 public struct InstanceCharInfo
