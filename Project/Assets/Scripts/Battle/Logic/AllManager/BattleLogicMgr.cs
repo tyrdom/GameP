@@ -50,9 +50,9 @@ namespace Battle.Logic.AllManager
 
         public readonly DicPool<string, IEffectBuff> BuffPool = new();
 
-        public readonly List<BodyL> BodyList = new();
+       
 
-        public Dictionary<int, BodyL> InstanceIdToBodyDic = new();
+        public DicForEach<int, BodyL> InstanceIdToBodyDic = new();
 
         public readonly List<MediaL> MediaList = new();
 
@@ -133,8 +133,8 @@ namespace Battle.Logic.AllManager
                 new InstanceCharInfo(byAlias.Id, weaponTypeCfg.Id, playerId, BattleLogicConfig.PlayerTeam);
             var bodyL = BodyL.Alloc(instanceInfo);
             _localPlayerBody = bodyL;
-            InstanceIdToBodyDic[playerId] = bodyL;
-            BodyList.Add(bodyL);
+            InstanceIdToBodyDic.AddOrUpdate(playerId,bodyL);
+           
         }
 
         private void OnLocalAct(OpAction opAct)
@@ -178,7 +178,7 @@ namespace Battle.Logic.AllManager
                 return;
             }
 
-            foreach (var bodyL in BodyList)
+            foreach (var bodyL in InstanceIdToBodyDic.GetList())
             {
                 bodyL.UpATick();
             }
@@ -226,6 +226,6 @@ namespace Battle.Logic.AllManager
         None,
         OpAct1,
         OpAct2,
-        OpAct3
+        Dash
     }
 }

@@ -26,14 +26,8 @@ namespace cfg
         Skill3Act = 10,
         Skill4Act = 11,
         Skill5Act = 12,
-        SkillDownDodge = 13,
-        SkillRightDodge = 14,
-        SkillLeftDodge = 15,
-        SkillUpDodge = 16,
-        SkillOtherDodge = 17,
-        OnDash = 18,
-        OnBadParry = 19,
-        OnCatchAtk = 20,
+        OnDash = 13,
+        OnCatchOrBlock = 14,
     }
 
 } 

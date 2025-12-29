@@ -25,7 +25,7 @@ namespace Battle.Logic.Effect
         }
 
 
-        public void UpATick()
+        public bool UpATickAndCheckFinish()
         {
             throw new System.NotImplementedException();
         }

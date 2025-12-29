@@ -10,7 +10,7 @@ namespace Battle.Logic.Effect
     {
         BodyL OnBodyL { get; set; }
 
-        void UpATick();
+        bool UpATickAndCheckFinish();
         SkillEffectCfg SkillEffectConfig { get; }
 
         int RemainingTime { get; set; }

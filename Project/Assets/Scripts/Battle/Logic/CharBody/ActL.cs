@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Battle.Logic.AllManager;
 using Battle.Logic.Media;
 using cfg;
@@ -8,11 +9,14 @@ using UnityEngine;
 
 public class ActL
 {
+    private List<BodyL> lockBreakTargetList = new();
+
     private WeaponTypeCfg _currentWeaponType;
 
     private SkillActCfg _currentSkillCfg;
 
     private SkillExtraCfg _currentSkillExtraCfg;
+
     public readonly BodyL BodyL;
 
     private ActStatus _nowActStatus = ActStatus.IdleOrWalk;
@@ -27,6 +31,11 @@ public class ActL
 
     public void UpATick()
     {
+        if (BodyL.BodyStatus == BodyStatus.Dead)
+        {
+            return;
+        }
+
         if (CanLaunchSkill())
         {
             var operate = BattleLogicMgr.Instance.UseOperate(BodyL.InstanceId);
@@ -156,7 +165,13 @@ public class ActL
                 }
 
                 break;
-            case OpAction.OpAct3:
+            case OpAction.Dash:
+                if (_currentWeaponType.DashDic.TryGetValue(_nowActStatus, out var dashCfg))
+                {
+                    LoadSkill(dashCfg);
+                }
+
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -165,6 +180,8 @@ public class ActL
     private void LoadSkill(SkillLaunchCfg skillActCfg)
     {
         var byAlias = GameConfigs.Instance.Tables.TbSkillActCfg.GetByAlias(skillActCfg.SkillActAlias);
+        if (!BodyL.BodyValueStatus.CanCostAndCost(byAlias)) return;
+        
         NowMovIdx = 0;
         NowMediaLaunchIdx = 0;
         _currentSkillCfg = byAlias ??
@@ -209,28 +226,84 @@ public class ActL
         BodyL.BodyMono.skillMoveVelocity = Vector3.zero;
     }
 
-    public void JudgeAtk(MediaL mediaL)
+    public AtkResult JudgeBeAtk(MediaL mediaL)
     {
-        var b1 = BodyL.BodyStatus == BodyStatus.Disable;
+       
+        var b1 = BodyL.BodyStatus == BodyStatus.Dead;
         if (b1)
         {
-            return;
+            return AtkResult.None;
         }
 
-        var b2 = BodyL.BodyStatus == BodyStatus.Dead;
+        var b2 = BodyL.BodyStatus == BodyStatus.Break;
+        if (b2)
         {
-            //todo deadBody    
+            return AtkResult.SuccessOnBreak;
         }
 
         var b = BodyL.StunBuff != null;
         if (b)
         {
+            return AtkResult.SuccessOnStun;
         }
 
         var maxTough = GameConfigs.Instance.Tables.TbCommonCfg.MaxTough;
         var minTough = GameConfigs.Instance.Tables.TbCommonCfg.MinTough;
-        var b3 = mediaL.AtkTough < minTough;
+        if (mediaL.AtkTough < minTough)
+        {
+            if (mediaL.Cfg.MediaType != MediaType.Range)
+            {
+                throw new Exception("Melee CanNot too low");
+            }
 
-        throw new NotImplementedException();
+            if (_currentSkillCfg == null) return AtkResult.FailBeCountered;
+            if (CurrentActTime <= _currentSkillCfg.ParryWindow)
+            {
+                return AtkResult.FailBeCountered;
+            }
+
+            return CurrentActTime <= _currentSkillCfg.DodgeWindow ? AtkResult.FailBeDodged : AtkResult.FailBeCountered;
+        }
+
+        if (mediaL.AtkTough >= maxTough)
+        {
+            return AtkResult.SuccessOnNormal;
+        }
+
+        var midTough = GameConfigs.Instance.Tables.TbCommonCfg.MidTough;
+        if (_currentSkillCfg == null)
+        {
+            return mediaL.AtkTough >= midTough ? AtkResult.FailBeParried : AtkResult.SuccessOnNormal;
+        }
+
+        if (mediaL.AtkTough > CurActTough || mediaL.AtkTough < CurActTough - midTough)
+            return AtkResult.SuccessOnNormal;
+        if (mediaL.AtkTough == CurActTough || mediaL.AtkTough == CurActTough - midTough)
+        {
+            return AtkResult.Draw;
+        }
+
+        if (CurrentActTime <= _currentSkillCfg.ParryWindow)
+        {
+            return AtkResult.FailBeCountered;
+        }
+
+        return CurrentActTime <= _currentSkillCfg.DodgeWindow
+            ? AtkResult.FailBeDodged
+            : AtkResult.FailBeCountered;
     }
+}
+
+
+public enum AtkResult
+
+{
+    None,
+    SuccessOnNormal,
+    SuccessOnBreak,
+    SuccessOnStun,
+    Draw,
+    FailBeDodged,
+    FailBeParried,
+    FailBeCountered
 }

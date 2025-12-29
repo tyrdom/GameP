@@ -18,9 +18,11 @@ public sealed partial class WeaponTypeCfg : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Alias = _buf.ReadString();
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);BlockParryDic = new System.Collections.Generic.Dictionary<AtkDirType, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { AtkDirType _k0;  _k0 = (AtkDirType)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     BlockParryDic.Add(_k0, _v0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);NoneDic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     NoneDic.Add(_k0, _v0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Op1Dic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     Op1Dic.Add(_k0, _v0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Op2Dic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     Op2Dic.Add(_k0, _v0);}}
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);DashDic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     DashDic.Add(_k0, _v0);}}
     }
 
     public static WeaponTypeCfg DeserializeWeaponTypeCfg(ByteBuf _buf)
@@ -30,18 +32,22 @@ public sealed partial class WeaponTypeCfg : Luban.BeanBase
 
     public readonly int Id;
     public readonly string Alias;
+    public readonly System.Collections.Generic.Dictionary<AtkDirType, SkillLaunchCfg> BlockParryDic;
     public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> NoneDic;
     public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> Op1Dic;
     public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> Op2Dic;
+    public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> DashDic;
    
     public const int __ID__ = -356643272;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        foreach (var _e in BlockParryDic.Values) { _e?.ResolveRef(tables); }
         foreach (var _e in NoneDic.Values) { _e?.ResolveRef(tables); }
         foreach (var _e in Op1Dic.Values) { _e?.ResolveRef(tables); }
         foreach (var _e in Op2Dic.Values) { _e?.ResolveRef(tables); }
+        foreach (var _e in DashDic.Values) { _e?.ResolveRef(tables); }
     }
 
     public override string ToString()
@@ -49,9 +55,11 @@ public sealed partial class WeaponTypeCfg : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "alias:" + Alias + ","
+        + "BlockParryDic:" + Luban.StringUtil.CollectionToString(BlockParryDic) + ","
         + "NoneDic:" + Luban.StringUtil.CollectionToString(NoneDic) + ","
         + "Op1Dic:" + Luban.StringUtil.CollectionToString(Op1Dic) + ","
         + "Op2Dic:" + Luban.StringUtil.CollectionToString(Op2Dic) + ","
+        + "DashDic:" + Luban.StringUtil.CollectionToString(DashDic) + ","
         + "}";
     }
 }

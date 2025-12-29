@@ -5,19 +5,19 @@ using Battle.Logic.AllManager;
 using Battle.Logic.Effect;
 using Battle.Logic.Map;
 using Battle.Logic.Media;
+using Battle.Logic.Tools;
 using cfg;
 using cfg.battle;
 using Configs;
-using UnityEditor;
-using UnityEngine;
+
 
 public class BodyL
 {
     public readonly BodyMono BodyMono;
 
-    public readonly ActL ActL;
+    private readonly ActL _actL;
 
-    public BodyValueStatus BodyValueStatus;
+    public readonly BodyValueStatus BodyValueStatus;
 
     public int Team;
 
@@ -25,16 +25,15 @@ public class BodyL
 
     public readonly BodyCfg Cfg;
 
+    public int PauseTime = 0;
 
     public IStunBuff StunBuff = null;
 
-    public Dictionary<string, StatusBuff> StatusBuffDict = new();
-    public List<StatusBuff> StatusBuffList = new();
+    public readonly DicForEach<string, StatusBuff> StatusBuffDict = new();
 
-    public List<MediaL> TempMediaList = new();
+    public readonly List<MediaL> TempMediaList = new();
 
     public BodyStatus BodyStatus;
-
 
 
     public static BodyL CreateBlank(int cfgId)
@@ -57,18 +56,18 @@ public class BodyL
     {
         obj.Reset();
         obj.BodyMono.Release();
-        BattleLogicMgr.Instance.BodyList.Remove(obj);
+        BattleLogicMgr.Instance.InstanceIdToBodyDic.Remove(obj.InstanceId);
     }
 
     private void Reset()
     {
         Team = -1;
         InstanceId = -1;
-        ActL.Reset();
+        _actL.Reset();
         BodyValueStatus.Reset();
         StunBuff = null;
         StatusBuffDict.Clear();
-        StatusBuffList.Clear();
+
         BodyMono.ResetPassiveMove();
     }
 
@@ -89,7 +88,7 @@ public class BodyL
         InstanceId = -1;
         Team = -1;
         BodyValueStatus = new BodyValueStatus(this);
-        ActL = new ActL(this);
+        _actL = new ActL(this);
     }
 
     private void InstanceData(InstanceCharInfo instanceCharInfo)
@@ -103,60 +102,84 @@ public class BodyL
     public void UpATick()
     {
         BodyValueStatus.UpATick();
-        StunBuff?.UpATick();
-
-        for (var index = StatusBuffList.Count - 1; index >= 0; index--)
+        StatusBuffUpATick();
+        if (PauseTime > 0)
         {
-            var statusBuff = StatusBuffList[index];
-            statusBuff.UpATick();
+            PauseTime -= BattleLogicMgr.upTickDeltaTimeMs;
+            return;
         }
 
+        StunBuff?.UpATickAndCheckFinish();
 
-        ActL.UpATick();
+
+        _actL.UpATick();
         BodyMono.UpATick();
     }
 
-    public void AddEffectBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL)
+    private void StatusBuffUpATick()
+    {
+        var statusBuffList = StatusBuffDict.GetList();
+        for (var index = statusBuffList.Count - 1; index >= 0; index--)
+        {
+            var statusBuff = statusBuffList[index];
+            var upATick = statusBuff.UpATickAndCheckFinish();
+            if (!upATick) continue;
+            statusBuffList.RemoveAt(index);
+            StatusBuffDict.Remove(statusBuff.SkillEffectConfig.Alias);
+        }
+    }
+
+    public void AddEffectOrBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
     {
         switch (skillEffectCfg.EffectType)
         {
             case EffectType.Push:
                 if (StunBuff is not CaughtBuff)
                 {
-                    AddStunBuff(skillEffectCfg, mediaL);
+                    AddStunBuff(skillEffectCfg, mediaL, fixTime);
                 }
 
                 break;
             case EffectType.Pull:
                 if (StunBuff is not CaughtBuff)
                 {
-                    AddStunBuff(skillEffectCfg, mediaL);
+                    AddStunBuff(skillEffectCfg, mediaL, fixTime);
                 }
 
                 break;
             case EffectType.Caught:
-                AddStunBuff(skillEffectCfg, mediaL);
+                AddStunBuff(skillEffectCfg, mediaL, fixTime);
                 break;
+            case EffectType.StandardDamage:
+                MakeEffect(skillEffectCfg, mediaL);
+                break;
+            case EffectType.Lock:
+                break;
+            case EffectType.Undefine:
             default:
-                AddStatusBuff(skillEffectCfg, mediaL);
+                AddStatusBuff(skillEffectCfg, mediaL, fixTime);
                 break;
         }
     }
 
-    private void AddStatusBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL)
+    private void MakeEffect(SkillEffectCfg skillEffectCfg, MediaL mediaL)
     {
-        var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL);
-        var statusBuff = StatusBuff.Alloc(instanceBuffInfo);
-        StatusBuffDict.Add(statusBuff.SkillEffectConfig.Alias, statusBuff);
-        StatusBuffList.Add(statusBuff);
+        throw new NotImplementedException();
     }
 
-    private void AddStunBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL)
+    private void AddStatusBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
     {
-        var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL);
+        var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL, fixTime);
+        var statusBuff = StatusBuff.Alloc(instanceBuffInfo);
+        StatusBuffDict.AddOrUpdate(statusBuff.SkillEffectConfig.Alias, statusBuff);
+    }
+
+    private void AddStunBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
+    {
+        var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL, fixTime);
         var stunBuff = StunBuffExtension.Alloc(instanceBuffInfo);
         StunBuff = stunBuff;
-        ActL.Reset();
+        _actL.Reset();
     }
 
     public bool CanInputAct()
@@ -166,21 +189,43 @@ public class BodyL
             return false;
         }
 
-        return ActL.CanInputAct();
+        return _actL.CanInputAct();
     }
 
     public void OnMediaHit(MediaL mediaL)
     {
-        if (!mediaL.CanLEffect())
+        if (!mediaL.CanLEffect(this))
         {
             return;
         }
 
-        mediaL.OnEffect();
-        if (mediaL.Cfg.MediaType is MediaType.Melee
-            || mediaL.Cfg.MediaType is MediaType.Range)
+
+        if (mediaL.Cfg.MediaType is MediaType.Melee or MediaType.Range)
         {
-            ActL.JudgeAtk(mediaL);
+            var result = _actL.JudgeBeAtk(mediaL);
+            switch (result)
+            {
+                case AtkResult.None:
+                    break;
+                case AtkResult.SuccessOnStun:
+                    break;
+                case AtkResult.Draw:
+                    break;
+                case AtkResult.FailBeDodged:
+                    break;
+                case AtkResult.FailBeParried:
+                    break;
+                case AtkResult.SuccessOnNormal:
+                    break;
+                case AtkResult.SuccessOnBreak:
+                    break;
+                case AtkResult.FailBeCountered:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        else if (mediaL.Cfg.MediaType is MediaType.Lock)
+        {
         }
     }
 
@@ -196,17 +241,20 @@ public class BodyL
 
     public int GetNowTough()
     {
-        return ActL.CurActTough;
+        return _actL.CurActTough;
+    }
+
+    public bool ExistsBuff(string cfgTargetBuffFilter)
+    {
+        if (StunBuff != null && StunBuff.SkillEffectConfig.Alias == cfgTargetBuffFilter)
+        {
+            return true;
+        }
+
+        return StatusBuffDict.ContainsKey(cfgTargetBuffFilter);
     }
 }
 
-public enum BodyStatus
-
-{
-    Active,
-    Disable,
-    Dead
-}
 
 public struct InstanceCharInfo
 {

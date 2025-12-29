@@ -65,11 +65,11 @@ namespace Battle.Logic.Media
                     break;
 
                 case ColliderShape.SphereCast:
-                    var scc = gameObject.AddComponent<HighSpeedMediaCollider>();
+                    var scc = gameObject.AddComponent<SpeedMediaCollider>();
                     scc.offset = new Vector3(mediaCfg.ColliderParam[0] / 1000f, defaultHeight / 2,
                         mediaCfg.ColliderParam[1] / 1000f);
                     scc.radius = mediaCfg.ColliderParam[2] / 1000f;
-
+                    
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

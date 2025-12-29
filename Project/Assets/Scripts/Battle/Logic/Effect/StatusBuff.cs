@@ -21,8 +21,9 @@ namespace Battle.Logic.Effect
         }
 
 
-        public void UpATick()
+        public bool UpATickAndCheckFinish()
         {
+            return false;
         }
 
         public static StatusBuff Alloc(InstanceBuffInfo instanceBuffInfo)
@@ -38,12 +39,14 @@ namespace Battle.Logic.Effect
 
         public readonly MediaL FromMedia;
 
-        public InstanceBuffInfo(BodyL onBodyL, string buffAlias, MediaL fromMedia)
+        public readonly int FixedTime;
+
+        public InstanceBuffInfo(BodyL onBodyL, string buffAlias, MediaL fromMedia, int fixedTime)
         {
             OnBodyL = onBodyL;
-
             BuffAlias = buffAlias;
             FromMedia = fromMedia;
+            FixedTime = fixedTime;
         }
     }
 }

@@ -1,12 +1,20 @@
 using System;
+using System.Collections.Generic;
 using Battle.Logic.AllManager;
 using cfg;
 using cfg.battle;
 using Configs;
+using QFramework;
 using UnityEngine;
 
 namespace Battle.Logic.Media
 {
+    public class HitRecord
+    {
+        public int HitCount;
+        public int HitCD;
+    }
+
     public class MediaL
     {
         public BodyL Owner = null;
@@ -18,18 +26,29 @@ namespace Battle.Logic.Media
         public int AtkTough;
         private AtkDirType _atkDirType;
         private int _lifeTime = 0;
-        private int _hitCd = 0;
 
-        private int _hitCount = 0;
-
+        private readonly Dictionary<int, HitRecord> _hitRecords = new();
+        private readonly List<HitRecord> _hitRecordsList = new();
+        public int TotalHitCount = 0;
 
         private int _movIdx = 0;
+
+        private readonly List<BodyL> _triggerBodyLsThisTick = new();
+
+        private readonly SortByDistance _sortByDistance;
 
         public MediaL(MediaMono mediaMono, MediaCfg mediaCfg)
         {
             MediaMono = mediaMono;
             mediaMono.MediaL = this;
             Cfg = mediaCfg;
+            var speedMediaCollider = MediaMono.GetComponent<SpeedMediaCollider>();
+            if (speedMediaCollider != null)
+            {
+                speedMediaCollider.SetL(this);
+            }
+
+            _sortByDistance = new SortByDistance(this);
         }
 
 
@@ -55,14 +74,17 @@ namespace Battle.Logic.Media
             MediaMono.gameObject.name = $"{Cfg.Alias}_{InstanceId}";
             _atkDirType = instanceMediaInfo.AtkDirType;
             _lifeTime = Cfg.Duration;
-            _hitCount = Cfg.HitMaxCount > 0 ? Cfg.HitMaxCount : int.MaxValue;
+            TotalHitCount = Cfg.HitMaxCountTotal > 0 ? Cfg.HitMaxCountTotal : int.MaxValue;
             AtkTough = Cfg.CustemToughPower == 0 ? Owner.GetNowTough() : Cfg.CustemToughPower;
+            _hitRecords.Clear();
+            _hitRecordsList.Clear();
+            _triggerBodyLsThisTick.Clear();
         }
 
         private void Reset()
         {
             _lifeTime = 0;
-            _hitCount = 0;
+            TotalHitCount = 0;
             Owner = null;
             InstanceId = -1;
             _movIdx = 0;
@@ -73,7 +95,7 @@ namespace Battle.Logic.Media
             var mediaCfg = GameConfigs.Instance.Tables.TbMediaCfg.GetById(cfgId);
             if (mediaCfg == null)
             {
-                throw new System.Exception("MediaCfg not found");
+                throw new Exception("MediaCfg not found");
             }
 
             var mediaMonoInPool = BLogicMono.Instance.CreateMediaMonoInPool(mediaCfg);
@@ -90,12 +112,17 @@ namespace Battle.Logic.Media
                 return;
             }
 
-            HighSpeedColliderCheck();
+            SpeedColliderCheck();
+
+            StillColliderCheck();
 
             var alive = CheckLifeTime();
             if (alive)
             {
-                DoMovement();
+                if (Cfg.ColliderShapeType == ColliderShape.SphereCast)
+                {
+                    DoMovement();
+                }
             }
             else
             {
@@ -103,10 +130,44 @@ namespace Battle.Logic.Media
             }
 
             MediaMono.UpATick();
-            _lifeTime += BattleLogicMgr.upTickDeltaTimeMs;
-            if (_hitCd > 0)
+            _lifeTime -= BattleLogicMgr.upTickDeltaTimeMs;
+            foreach (var hitRecord in _hitRecordsList)
             {
-                _hitCd -= BattleLogicMgr.upTickDeltaTimeMs;
+                if (hitRecord.HitCD > 0)
+                {
+                    hitRecord.HitCD -= BattleLogicMgr.upTickDeltaTimeMs;
+                }
+            }
+        }
+
+        private void StillColliderCheck()
+        {
+            if (TotalHitCount <= 0) return;
+            if (_triggerBodyLsThisTick.Count == 0) return;
+            var min = Math.Min(TotalHitCount, _triggerBodyLsThisTick.Count);
+            _triggerBodyLsThisTick.Sort(0, min, _sortByDistance);
+            for (int i = 0; i < min; i++)
+            {
+                _triggerBodyLsThisTick[i].OnMediaHit(this);
+            }
+
+            _triggerBodyLsThisTick.Clear();
+        }
+
+        private class SortByDistance : IComparer<BodyL>
+        {
+            public SortByDistance(MediaL mediaL)
+            {
+                _mediaL = mediaL;
+            }
+
+            private readonly MediaL _mediaL;
+
+            public int Compare(BodyL x, BodyL y)
+            {
+                return
+                    x.BodyMono.transform.Distance(_mediaL.MediaMono.transform)
+                        .CompareTo(y.BodyMono.transform.Distance(_mediaL.MediaMono.transform));
             }
         }
 
@@ -118,7 +179,7 @@ namespace Battle.Logic.Media
         private bool CheckLifeTime()
         {
             var b = _lifeTime > 0;
-            var b1 = _hitCount > 0;
+            var b1 = TotalHitCount > 0;
             return b && b1;
         }
 
@@ -137,9 +198,9 @@ namespace Battle.Logic.Media
             MediaMono.nowVelocity = new Vector3(movementChangeCfg.XInt / 1000f, 0, movementChangeCfg.ZInt / 1000f);
         }
 
-        private void HighSpeedColliderCheck()
+        private void SpeedColliderCheck()
         {
-            var highSpeedMedia = MediaMono.GetComponent<HighSpeedMediaCollider>();
+            var highSpeedMedia = MediaMono.GetComponent<SpeedMediaCollider>();
             if (highSpeedMedia != null)
             {
                 highSpeedMedia.UpATick();
@@ -153,15 +214,72 @@ namespace Battle.Logic.Media
         }
 
 
-        public bool CanLEffect()
+        public bool CanLEffect(BodyL bodyL)
         {
-            return _hitCount > 0 && _hitCd <= 0;
+            if (TotalHitCount <= 0)
+            {
+                return false;
+            }
+
+            var bodyLInstanceId = bodyL.InstanceId;
+            var bodyLTeam = bodyL.Team;
+
+            var b1 = bodyLInstanceId == Owner.InstanceId;
+
+            var bb = RelationShipCheck(bodyLTeam, b1);
+            if (!bb)
+                return false;
+
+            var cfgTargetStatusFilter = (int)Cfg.TargetStatusFilter
+                                        & (int)bodyL.BodyStatus;
+            if (cfgTargetStatusFilter == 0)
+                return false;
+
+            if (!Cfg.TargetBuffFilter.IsNullOrEmpty() && !bodyL.ExistsBuff(Cfg.TargetBuffFilter))
+                return false;
+
+            if (_hitRecords.TryGetValue(bodyLInstanceId, out var hitRecord))
+            {
+                var canLEffect = hitRecord.HitCD <= 0 && hitRecord.HitCount > 0;
+                return canLEffect;
+            }
+
+            _hitRecords[bodyLInstanceId] = new HitRecord
+            {
+                HitCount = Cfg.HitMaxCountEach,
+                HitCD = 0
+            };
+            _hitRecordsList.Add(_hitRecords[bodyLInstanceId]);
+            return true;
         }
 
-        public void OnEffect()
+        public void DoEffect(BodyL bodyL, bool dodged)
         {
-            _hitCount--;
-            _hitCd += Cfg.HitGapTime;
+            var hitRecord = _hitRecords[bodyL.InstanceId];
+            if (!dodged)
+            {
+                hitRecord.HitCount--;
+            }
+
+            hitRecord.HitCD += Cfg.HitGapTime;
+        }
+
+        private bool RelationShipCheck(int bodyLTeam, bool b1)
+        {
+            var b2 = bodyLTeam == Owner.Team;
+            var a = b1 ? (int)(TargetTypeTag.Self) : 0;
+            var b = b2 && !b1 ? (int)(TargetTypeTag.OtherAlly) : 0;
+            var c = !b2 ? (int)(TargetTypeTag.Enemy) : 0;
+            var t = a + b + c;
+
+            var cfgTargetType = (int)Cfg.TargetType & t;
+            var bb = cfgTargetType != 0;
+            return bb;
+        }
+
+        public void AddTickHitBody(BodyL bodyL)
+        {
+            _triggerBodyLsThisTick.Add(bodyL);
         }
     }
 

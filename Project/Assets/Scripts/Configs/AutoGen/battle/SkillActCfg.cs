@@ -18,9 +18,7 @@ public sealed partial class SkillActCfg : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Alias = _buf.ReadString();
-        FromWeaponId = _buf.ReadInt();
         SpCost = _buf.ReadInt();
-        ParryPauseTime = _buf.ReadInt();
         ParryWindow = _buf.ReadInt();
         DodgeWindow = _buf.ReadInt();
         BaseTough = _buf.ReadInt();
@@ -42,9 +40,7 @@ public sealed partial class SkillActCfg : Luban.BeanBase
 
     public readonly int Id;
     public readonly string Alias;
-    public readonly int FromWeaponId;
     public readonly int SpCost;
-    public readonly int ParryPauseTime;
     public readonly int ParryWindow;
     public readonly int DodgeWindow;
     public readonly int BaseTough;
@@ -72,9 +68,7 @@ public sealed partial class SkillActCfg : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "alias:" + Alias + ","
-        + "fromWeaponId:" + FromWeaponId + ","
         + "spCost:" + SpCost + ","
-        + "parryPauseTime:" + ParryPauseTime + ","
         + "parryWindow:" + ParryWindow + ","
         + "dodgeWindow:" + DodgeWindow + ","
         + "baseTough:" + BaseTough + ","

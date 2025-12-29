@@ -81,7 +81,8 @@ public class BodyMono : MonoBehaviour
         }
 
         var mediaL = mediaMono.MediaL;
-        BodyL.OnMediaHit(mediaL);
+        mediaL.AddTickHitBody(BodyL);
+    
     }
 
     public void Release()

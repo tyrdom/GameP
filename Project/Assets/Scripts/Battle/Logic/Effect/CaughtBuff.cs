@@ -26,7 +26,7 @@ namespace Battle.Logic.Effect
         {
          return  this.CanStunInputAct();
         }
-        public void UpATick()
+        public bool UpATickAndCheckFinish()
         {
             throw new System.NotImplementedException();
         }

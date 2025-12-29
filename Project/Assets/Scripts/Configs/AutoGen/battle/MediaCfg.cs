@@ -23,12 +23,15 @@ public sealed partial class MediaCfg : Luban.BeanBase
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);ColliderParam = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); ColliderParam.Add(_e0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Movement = new System.Collections.Generic.List<MovementChangeCfg>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { MovementChangeCfg _e0;  _e0 = global::cfg.MovementChangeCfg.DeserializeMovementChangeCfg(_buf); Movement.Add(_e0);}}
         Duration = _buf.ReadInt();
-        HitMaxCount = _buf.ReadInt();
+        HitMaxCountTotal = _buf.ReadInt();
         HitGapTime = _buf.ReadInt();
+        HitMaxCountEach = _buf.ReadInt();
         CustemToughPower = _buf.ReadInt();
         MediaType = (MediaType)_buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);MediaExtraParameters = new System.Collections.Generic.List<string>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); MediaExtraParameters.Add(_e0);}}
         TargetType = (TargetTypeTag)_buf.ReadInt();
+        TargetStatusFilter = (BodyStatus)_buf.ReadInt();
+        TargetBuffFilter = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);EffectAlias = new System.Collections.Generic.List<string>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); EffectAlias.Add(_e0);}}
     }
 
@@ -44,12 +47,15 @@ public sealed partial class MediaCfg : Luban.BeanBase
     public readonly System.Collections.Generic.List<int> ColliderParam;
     public readonly System.Collections.Generic.List<MovementChangeCfg> Movement;
     public readonly int Duration;
-    public readonly int HitMaxCount;
+    public readonly int HitMaxCountTotal;
     public readonly int HitGapTime;
+    public readonly int HitMaxCountEach;
     public readonly int CustemToughPower;
     public readonly MediaType MediaType;
     public readonly System.Collections.Generic.List<string> MediaExtraParameters;
     public readonly TargetTypeTag TargetType;
+    public readonly BodyStatus TargetStatusFilter;
+    public readonly string TargetBuffFilter;
     public readonly System.Collections.Generic.List<string> EffectAlias;
    
     public const int __ID__ = 785396342;
@@ -70,12 +76,15 @@ public sealed partial class MediaCfg : Luban.BeanBase
         + "colliderParam:" + Luban.StringUtil.CollectionToString(ColliderParam) + ","
         + "Movement:" + Luban.StringUtil.CollectionToString(Movement) + ","
         + "duration:" + Duration + ","
-        + "hitMaxCount:" + HitMaxCount + ","
+        + "hitMaxCountTotal:" + HitMaxCountTotal + ","
         + "hitGapTime:" + HitGapTime + ","
+        + "hitMaxCountEach:" + HitMaxCountEach + ","
         + "custemToughPower:" + CustemToughPower + ","
         + "mediaType:" + MediaType + ","
         + "mediaExtraParameters:" + Luban.StringUtil.CollectionToString(MediaExtraParameters) + ","
         + "targetType:" + TargetType + ","
+        + "targetStatusFilter:" + TargetStatusFilter + ","
+        + "targetBuffFilter:" + TargetBuffFilter + ","
         + "effectAlias:" + Luban.StringUtil.CollectionToString(EffectAlias) + ","
         + "}";
     }
