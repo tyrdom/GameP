@@ -5,6 +5,7 @@ using Battle.Logic.Media;
 using cfg;
 using cfg.battle;
 using Configs;
+using QFramework;
 using UnityEngine;
 
 public class ActL
@@ -132,7 +133,7 @@ public class ActL
 
     private static void LaunchMedia(MediaL mediaL, Vector3 offSet, int rotateY, BodyL bodyL)
     {
-        var transform = bodyL.BodyMono.transform;
+        var transform = bodyL.BodyLMono.transform;
         var transform1 = mediaL.MediaMono.transform;
         transform1.position = transform.TransformPoint(offSet);
         transform1.rotation = transform.rotation;
@@ -179,21 +180,48 @@ public class ActL
 
     private void LoadSkill(SkillLaunchCfg skillActCfg)
     {
-        var byAlias = GameConfigs.Instance.Tables.TbSkillActCfg.GetByAlias(skillActCfg.SkillActAlias);
+        var skillActAlias = skillActCfg.SkillActAlias;
+        var nextComboStatus = skillActCfg.NextComboStatus;
+        var byAlias = GameConfigs.Instance.Tables.TbSkillActCfg.GetByAlias(skillActAlias);
+        if (byAlias == null)
+        {
+            throw new Exception($"SkillActCfg is null check cfg{skillActAlias}");
+        }
+
+        LoadSkill(byAlias, nextComboStatus);
+    }
+
+    private void LoadSkill(SkillActCfg byAlias, ActStatus nextComboStatus)
+    {
         if (!BodyL.BodyValueStatus.CanCostAndCost(byAlias)) return;
-        
+
         NowMovIdx = 0;
         NowMediaLaunchIdx = 0;
-        _currentSkillCfg = byAlias ??
-                           throw new Exception($"SkillActCfg is null check cfg{skillActCfg.SkillActAlias}");
+        _currentSkillCfg = byAlias;
         CurrentActTime = 0;
-        _nowActStatus = skillActCfg.NextComboStatus;
-        _currentSkillExtraCfg = GameConfigs.Instance.SkillExtraCfgS[skillActCfg.SkillActAlias];
+
+        _nowActStatus = nextComboStatus;
+        _currentSkillExtraCfg = GameConfigs.Instance.SkillExtraCfgS[byAlias.Alias];
 
         var lockMediaAlias = _currentSkillCfg.LockMediaAlias;
+        if (lockMediaAlias.IsNullOrEmpty())
+        {
+            return;
+        }
+
         LaunchAMedia(lockMediaAlias, AtkDirType.Other, Vector3.zero, 0);
     }
 
+    public void ForceLaunchSkill(int skillId, ActStatus actStatus)
+    {
+        var byAlias = GameConfigs.Instance.Tables.TbSkillActCfg.GetById(skillId);
+        if (byAlias == null)
+        {
+            throw new Exception($"SkillActCfg is null check cfg{skillId}");
+        }
+
+        LoadSkill(byAlias, actStatus);
+    }
 
     private bool CanLaunchSkill()
     {
@@ -223,12 +251,11 @@ public class ActL
         CurrentActTime = 0;
         NowMovIdx = 0;
         _nowActStatus = ActStatus.IdleOrWalk;
-        BodyL.BodyMono.skillMoveVelocity = Vector3.zero;
+        BodyL.BodyLMono.skillMoveVelocity = Vector3.zero;
     }
 
     public AtkResult JudgeBeAtk(MediaL mediaL)
     {
-       
         var b1 = BodyL.BodyStatus == BodyStatus.Dead;
         if (b1)
         {
@@ -292,6 +319,14 @@ public class ActL
             ? AtkResult.FailBeDodged
             : AtkResult.FailBeCountered;
     }
+
+    public void OnStun()
+    {
+        _currentSkillCfg = null;
+        CurrentActTime = 0;
+        NowMovIdx = 0;
+        throw new NotImplementedException();
+    }
 }
 
 
@@ -305,5 +340,5 @@ public enum AtkResult
     Draw,
     FailBeDodged,
     FailBeParried,
-    FailBeCountered
+    FailBeCountered,
 }

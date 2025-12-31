@@ -11,13 +11,15 @@
 
 namespace cfg
 { 
+    [System.Flags]
     public enum AtkDirType
     {
-        Up = 0,
-        Left = 1,
-        Right = 2,
-        Down = 3,
-        Other = 4,
+        Up = 1,
+        Left = 2,
+        Right = 4,
+        Down = 8,
+        Other = 16,
+        Any = Up|Left|Right|Down|Other,
     }
 
 } 

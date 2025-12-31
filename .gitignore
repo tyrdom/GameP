@@ -20,3 +20,16 @@ Project/*.userprefs
 # 保留必要的
 !Project/[Pp]ackages/manifest.json
 !Project/[Pp]ackages/packages-lock.json
+
+# Microsoft Office temporary files
+*.tmp
+~$*
+~*.xls
+~*.xlsx
+~*.doc
+~*.docx
+~*.ppt
+~*.pptx
+
+# Office自动恢复文件
+*.~*

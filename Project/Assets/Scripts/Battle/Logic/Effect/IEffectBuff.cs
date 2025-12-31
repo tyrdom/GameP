@@ -8,13 +8,13 @@ namespace Battle.Logic.Effect
     public interface IEffectBuff
 
     {
-        BodyL OnBodyL { get; set; }
+        BodyL BuffOnBodyL { get; set; }
 
         bool UpATickAndCheckFinish();
         SkillEffectCfg SkillEffectConfig { get; }
 
         int RemainingTime { get; set; }
-        void OnInstantiate(InstanceBuffInfo buffInfo);
+        bool TryOnAdd(InstanceBuffInfo buffInfo);
     }
 
     public static class EffectBuffExtensions
@@ -41,16 +41,16 @@ namespace Battle.Logic.Effect
             switch (obj)
             {
                 case IStunBuff stunBuff:
-                    if (obj.OnBodyL.StunBuff == stunBuff)
+                    if (obj.BuffOnBodyL.StunBuff == stunBuff)
                     {
-                        obj.OnBodyL.StunBuff = null;
-                        obj.OnBodyL.BodyMono.ResetPassiveMove();
-                        obj.OnBodyL.BodyMono.ResetSkillMove();
+                        obj.BuffOnBodyL.StunBuff = null;
+                        obj.BuffOnBodyL.BodyLMono.ResetPassiveMove();
+                        obj.BuffOnBodyL.BodyLMono.ResetSkillMove();
                     }
 
                     break;
                 case StatusBuff statusBuff:
-                    obj.OnBodyL.RemoveStatusBuff(statusBuff);
+                    obj.BuffOnBodyL.RemoveStatusBuff(statusBuff);
                     break;
             }
         }

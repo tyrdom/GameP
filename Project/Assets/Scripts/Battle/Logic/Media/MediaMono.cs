@@ -69,7 +69,7 @@ namespace Battle.Logic.Media
                     scc.offset = new Vector3(mediaCfg.ColliderParam[0] / 1000f, defaultHeight / 2,
                         mediaCfg.ColliderParam[1] / 1000f);
                     scc.radius = mediaCfg.ColliderParam[2] / 1000f;
-                    
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -94,8 +94,7 @@ namespace Battle.Logic.Media
 
         public void OnCastHit(RaycastHit hitInfo)
         {
-            var bodyMono = hitInfo.collider.GetComponent<BodyMono>();
-
+            var bodyMono = hitInfo.collider.GetComponent<BodyLMono>();
             if (bodyMono != null)
             {
                 bodyMono.BodyL.OnMediaHit(MediaL);

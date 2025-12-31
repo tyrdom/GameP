@@ -3,7 +3,7 @@ using Battle.Logic.Media;
 using cfg;
 using UnityEngine;
 
-public class BodyMono : MonoBehaviour
+public class BodyLMono : MonoBehaviour
 {
     public BodyL BodyL;
 
@@ -41,6 +41,8 @@ public class BodyMono : MonoBehaviour
         }
     }
 
+    
+   
     private void PassiveMove()
     {
         if (passiveMoveVelocity != Vector3.zero)
@@ -96,5 +98,15 @@ public class BodyMono : MonoBehaviour
             ? new Vector3((float)lastMoveFixXInt / lastMoveTime, 0, movementChangeCfg.ZInt / 1000f * skillMoveRateZ)
             : new Vector3(movementChangeCfg.XInt / 1000f, 0, movementChangeCfg.ZInt / 1000f * skillMoveRateZ);
         skillMoveVelocity = vector3;
+    }
+
+    public void ForceSetRotate( Quaternion newTransformRotation )
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void ForceSetPos(Vector3 pos)
+    {
+        throw new System.NotImplementedException();
     }
 }

@@ -18,7 +18,7 @@ namespace cfg
         Run = 2,
         SkillUpParry = 3,
         SkillLeftParry = 4,
-        SkilRightParry = 5,
+        SkillRightParry = 5,
         SkillDownParry = 6,
         SkillOtherParry = 7,
         Skill1Act = 8,

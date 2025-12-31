@@ -166,8 +166,8 @@ namespace Battle.Logic.Media
             public int Compare(BodyL x, BodyL y)
             {
                 return
-                    x.BodyMono.transform.Distance(_mediaL.MediaMono.transform)
-                        .CompareTo(y.BodyMono.transform.Distance(_mediaL.MediaMono.transform));
+                    x.BodyLMono.transform.Distance(_mediaL.MediaMono.transform)
+                        .CompareTo(y.BodyLMono.transform.Distance(_mediaL.MediaMono.transform));
             }
         }
 

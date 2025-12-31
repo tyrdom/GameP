@@ -11,19 +11,25 @@ namespace Battle.Logic.Effect
     {
         public static bool CanStunInputAct(this IStunBuff stunBuff)
         {
-            return stunBuff.SkillEffectConfig.Parameters[1] >= stunBuff.RemainingTime;
+            return stunBuff.SkillEffectConfig.Parameters[0] >= stunBuff.RemainingTime;
         }
 
-        public static IStunBuff Alloc(InstanceBuffInfo buffInfo)
+        public static bool TryAllocAndOnAdd(InstanceBuffInfo buffInfo, out IEffectBuff stunBuff)
         {
-            var effectBuff = BattleLogicMgr.Instance.BuffPool.Allocate(buffInfo.BuffAlias);
-            
-            
+            stunBuff = null;
+
+            IEffectBuff effectBuff = BattleLogicMgr.Instance.BuffPool.Allocate(buffInfo.BuffAlias);
             var effectBuffRemainingTime = effectBuff.SkillEffectConfig.Parameters[0];
-            
             effectBuff.RemainingTime = effectBuffRemainingTime;
-            effectBuff.OnInstantiate(buffInfo);
-            return effectBuff as IStunBuff;
+
+            var tryAllocAndAdd = effectBuff.TryOnAdd(buffInfo);
+            if (!tryAllocAndAdd)
+            {
+                BattleLogicMgr.Instance.BuffPool.Free(effectBuff.SkillEffectConfig.Alias, effectBuff);
+            }
+
+            stunBuff = effectBuff;
+            return tryAllocAndAdd;
         }
     }
 }

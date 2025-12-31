@@ -4,12 +4,12 @@ namespace Battle.Logic.Effect
 {
     public class PullBuff : IStunBuff
     {
-        public BodyL OnBodyL { get; set; }
+        public BodyL BuffOnBodyL { get; set; }
 
         public SkillEffectCfg SkillEffectConfig { get; }
         public int RemainingTime { get; set; }
 
-        public void OnInstantiate(InstanceBuffInfo buffInfo)
+        public bool TryOnAdd(InstanceBuffInfo buffInfo)
         {
             throw new System.NotImplementedException();
         }

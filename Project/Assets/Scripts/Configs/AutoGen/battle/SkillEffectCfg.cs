@@ -18,6 +18,7 @@ public sealed partial class SkillEffectCfg : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Alias = _buf.ReadString();
+        BodyStatusFilter = (BodyStatus)_buf.ReadInt();
         Desc = _buf.ReadString();
         EffectType = (EffectType)_buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Parameters = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); Parameters.Add(_e0);}}
@@ -36,6 +37,7 @@ public sealed partial class SkillEffectCfg : Luban.BeanBase
     /// 别名
     /// </summary>
     public readonly string Alias;
+    public readonly BodyStatus BodyStatusFilter;
     /// <summary>
     /// 描述
     /// </summary>
@@ -61,6 +63,7 @@ public sealed partial class SkillEffectCfg : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "alias:" + Alias + ","
+        + "BodyStatusFilter:" + BodyStatusFilter + ","
         + "desc:" + Desc + ","
         + "effectType:" + EffectType + ","
         + "Parameters:" + Luban.StringUtil.CollectionToString(Parameters) + ","

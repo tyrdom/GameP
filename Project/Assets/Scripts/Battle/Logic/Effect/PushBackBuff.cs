@@ -6,12 +6,12 @@ namespace Battle.Logic.Effect
     {
         public SkillEffectCfg SkillEffectConfig { get; }
         public int RemainingTime { get; set; }
-        public void OnInstantiate(InstanceBuffInfo buffInfo)
+        public bool TryOnAdd(InstanceBuffInfo buffInfo)
         {
             throw new System.NotImplementedException();
         }
 
-        public BodyL OnBodyL { get; set; }
+        public BodyL BuffOnBodyL { get; set; }
         public PushBackBuff(SkillEffectCfg skillEffectConfig)
         {
             SkillEffectConfig = skillEffectConfig;
@@ -21,7 +21,7 @@ namespace Battle.Logic.Effect
 
         public void ResetState()
         {
-            OnBodyL = null;
+            BuffOnBodyL = null;
             RemainingTime = 0;
         }
 

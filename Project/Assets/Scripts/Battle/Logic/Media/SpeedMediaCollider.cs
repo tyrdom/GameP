@@ -108,8 +108,8 @@ namespace Battle.Logic.Media
         {
             var distanceComparison = x.distance.CompareTo(y.distance);
             if (distanceComparison != 0) return distanceComparison;
-            var xInstanceId = x.transform.TryGetComponent<BodyMono>(out var xMono) ? xMono.BodyL.InstanceId : 0;
-            var yInstanceId = y.transform.TryGetComponent<BodyMono>(out var yMono) ? yMono.BodyL.InstanceId : 0;
+            var xInstanceId = x.transform.TryGetComponent<BodyLMono>(out var xMono) ? xMono.BodyL.InstanceId : 0;
+            var yInstanceId = y.transform.TryGetComponent<BodyLMono>(out var yMono) ? yMono.BodyL.InstanceId : 0;
             var colliderInstanceIDComparison = xInstanceId.CompareTo(yInstanceId);
             return colliderInstanceIDComparison != 0
                 ? colliderInstanceIDComparison

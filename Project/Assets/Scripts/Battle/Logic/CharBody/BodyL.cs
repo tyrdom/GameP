@@ -13,7 +13,7 @@ using Configs;
 
 public class BodyL
 {
-    public readonly BodyMono BodyMono;
+    public readonly BodyLMono BodyLMono;
 
     private readonly ActL _actL;
 
@@ -55,7 +55,7 @@ public class BodyL
     public static void Release(BodyL obj)
     {
         obj.Reset();
-        obj.BodyMono.Release();
+        obj.BodyLMono.Release();
         BattleLogicMgr.Instance.InstanceIdToBodyDic.Remove(obj.InstanceId);
     }
 
@@ -68,23 +68,23 @@ public class BodyL
         StunBuff = null;
         StatusBuffDict.Clear();
 
-        BodyMono.ResetPassiveMove();
+        BodyLMono.ResetPassiveMove();
     }
 
     public void SpawnToPoint(PointMono point)
     {
         var transform = point.transform;
-        var transform1 = BodyMono.transform;
+        var transform1 = BodyLMono.transform;
         transform1.position = transform.position;
         transform1.rotation = transform.rotation;
-        BodyMono.gameObject.SetActive(true);
+        BodyLMono.gameObject.SetActive(true);
     }
 
-    public BodyL(BodyMono bodyMono, BodyCfg dataById)
+    public BodyL(BodyLMono bodyLMono, BodyCfg dataById)
     {
-        BodyMono = bodyMono;
+        BodyLMono = bodyLMono;
         Cfg = dataById;
-        BodyMono.BodyL = this;
+        BodyLMono.BodyL = this;
         InstanceId = -1;
         Team = -1;
         BodyValueStatus = new BodyValueStatus(this);
@@ -96,7 +96,7 @@ public class BodyL
         InstanceId = instanceCharInfo.instanceId;
         Team = instanceCharInfo.team;
         BodyStatus = BodyStatus.Active;
-        BodyMono.gameObject.name = Cfg.Alias + "_" + InstanceId;
+        BodyLMono.gameObject.name = Cfg.Alias + "_" + InstanceId;
     }
 
     public void UpATick()
@@ -113,7 +113,7 @@ public class BodyL
 
 
         _actL.UpATick();
-        BodyMono.UpATick();
+        BodyLMono.UpATick();
     }
 
     private void StatusBuffUpATick()
@@ -177,9 +177,15 @@ public class BodyL
     private void AddStunBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
     {
         var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL, fixTime);
-        var stunBuff = StunBuffExtension.Alloc(instanceBuffInfo);
-        StunBuff = stunBuff;
-        _actL.Reset();
+        var addOk = StunBuffExtension.TryAllocAndOnAdd(instanceBuffInfo, out var aStunBuff);
+        if (!addOk)
+        {
+            return;
+        }
+
+        _actL.OnStun();
+        StunBuff = aStunBuff as IStunBuff;
+  
     }
 
     public bool CanInputAct()
@@ -213,7 +219,7 @@ public class BodyL
                     break;
                 case AtkResult.FailBeDodged:
                     break;
-                case AtkResult.FailBeParried:
+                case AtkResult.FailBeParried://
                     break;
                 case AtkResult.SuccessOnNormal:
                     break;
@@ -231,7 +237,7 @@ public class BodyL
 
     public void DoSkillActMoveChange(MovementChangeCfg movementChangeCfg, int lastMoveTime)
     {
-        BodyMono.SetSkillVelocity(movementChangeCfg, lastMoveTime);
+        BodyLMono.SetSkillVelocity(movementChangeCfg, lastMoveTime);
     }
 
     public void RemoveStatusBuff(StatusBuff statusBuff)
@@ -252,6 +258,16 @@ public class BodyL
         }
 
         return StatusBuffDict.ContainsKey(cfgTargetBuffFilter);
+    }
+
+    public void SetRigidBodyActive(bool b)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ForceLaunchSkill(int triggerSkillId, ActStatus actStatus)
+    {
+        _actL.ForceLaunchSkill(triggerSkillId, actStatus);
     }
 }
 

@@ -47,13 +47,13 @@ namespace Battle.Logic.AllManager
             BattleLogicMgr.Instance.GoATick();
         }
 
-        public BodyMono CreateBodyMonoInPool(BodyCfg dataById)
+        public BodyLMono CreateBodyMonoInPool(BodyCfg dataById)
         {
             var resPath = dataById.ResPath;
             var loadBodyAsset = ResourceMgr.LoadBodyAsset(resPath);
             var bodyMono = Instantiate(loadBodyAsset, Vector3.zero, Quaternion.identity, bodyPool);
             bodyMono.gameObject.SetActive(false);
-            return bodyMono.GetComponent<BodyMono>();
+            return bodyMono.GetComponent<BodyLMono>();
         }
 
         public MediaMono CreateMediaMonoInPool(MediaCfg mediaCfg)

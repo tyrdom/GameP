@@ -18,7 +18,7 @@ public sealed partial class WeaponTypeCfg : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Alias = _buf.ReadString();
-        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);BlockParryDic = new System.Collections.Generic.Dictionary<AtkDirType, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { AtkDirType _k0;  _k0 = (AtkDirType)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     BlockParryDic.Add(_k0, _v0);}}
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);BlockParryDic = new System.Collections.Generic.Dictionary<AtkDirType, SkillParryCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { AtkDirType _k0;  _k0 = (AtkDirType)_buf.ReadInt(); SkillParryCfg _v0;  _v0 = global::cfg.SkillParryCfg.DeserializeSkillParryCfg(_buf);     BlockParryDic.Add(_k0, _v0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);NoneDic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     NoneDic.Add(_k0, _v0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Op1Dic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     Op1Dic.Add(_k0, _v0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Op2Dic = new System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg>(n0 * 3 / 2);for(var i0 = 0 ; i0 < n0 ; i0++) { ActStatus _k0;  _k0 = (ActStatus)_buf.ReadInt(); SkillLaunchCfg _v0;  _v0 = global::cfg.SkillLaunchCfg.DeserializeSkillLaunchCfg(_buf);     Op2Dic.Add(_k0, _v0);}}
@@ -30,9 +30,15 @@ public sealed partial class WeaponTypeCfg : Luban.BeanBase
         return new battle.WeaponTypeCfg(_buf);
     }
 
+    /// <summary>
+    /// id
+    /// </summary>
     public readonly int Id;
+    /// <summary>
+    /// 名称
+    /// </summary>
     public readonly string Alias;
-    public readonly System.Collections.Generic.Dictionary<AtkDirType, SkillLaunchCfg> BlockParryDic;
+    public readonly System.Collections.Generic.Dictionary<AtkDirType, SkillParryCfg> BlockParryDic;
     public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> NoneDic;
     public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> Op1Dic;
     public readonly System.Collections.Generic.Dictionary<ActStatus, SkillLaunchCfg> Op2Dic;
