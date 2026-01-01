@@ -6,7 +6,12 @@ namespace Battle.Logic.Effect
     {
         public SkillEffectCfg SkillEffectConfig { get; }
         public int RemainingTime { get; set; }
-        public bool TryOnAdd(InstanceBuffInfo buffInfo)
+        public void OnAdd(InstanceBuffInfo buffInfo)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnRemove()
         {
             throw new System.NotImplementedException();
         }

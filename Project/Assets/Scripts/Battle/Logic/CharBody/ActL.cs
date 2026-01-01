@@ -52,6 +52,7 @@ public class ActL
         }
     }
 
+
     private void UpNowSkill()
     {
         DoChangeMovement();
@@ -241,7 +242,8 @@ public class ActL
 
     public bool CanInputAct()
     {
-        var b = _currentSkillCfg == null || _currentSkillCfg.ComboInputCacheStartTime <= CurrentActTime;
+        var b = _currentSkillCfg == null || _currentSkillCfg.ComboInputCacheStartTime <= CurrentActTime ||
+                CurrentActTime <= _currentSkillCfg.DodgeWindow;
         return b;
     }
 
@@ -326,6 +328,14 @@ public class ActL
         CurrentActTime = 0;
         NowMovIdx = 0;
         throw new NotImplementedException();
+    }
+
+    public int GetFixCastStunTime()
+    {
+        if
+            (_currentSkillCfg == null) throw new Exception("_currentSkillCfg != null");
+
+        return _currentSkillCfg.SkillMustTime - CurrentActTime;
     }
 }
 

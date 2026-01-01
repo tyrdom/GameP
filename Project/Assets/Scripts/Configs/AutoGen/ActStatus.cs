@@ -13,21 +13,21 @@ namespace cfg
 { 
     public enum ActStatus
     {
-        Undefine = 0,
-        IdleOrWalk = 1,
-        Run = 2,
-        SkillUpParry = 3,
-        SkillLeftParry = 4,
-        SkillRightParry = 5,
-        SkillDownParry = 6,
-        SkillOtherParry = 7,
-        Skill1Act = 8,
-        Skill2Act = 9,
-        Skill3Act = 10,
-        Skill4Act = 11,
-        Skill5Act = 12,
-        OnDash = 13,
-        OnCatchOrBlock = 14,
+        IdleOrWalk = 0,
+        Run = 1,
+        SkillUpParry = 2,
+        SkillLeftParry = 3,
+        SkillRightParry = 4,
+        SkillDownParry = 5,
+        SkillOtherParry = 6,
+        Skill1Act = 7,
+        Skill2Act = 8,
+        Skill3Act = 9,
+        Skill4Act = 10,
+        Skill5Act = 11,
+        OnDash = 12,
+        OnCatchOrBlock = 13,
+        Max = 14,
     }
 
 } 

@@ -124,5 +124,10 @@ namespace Battle.Logic
         public void ReBorn()
         {
         }
+
+        public int GatherAtk()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

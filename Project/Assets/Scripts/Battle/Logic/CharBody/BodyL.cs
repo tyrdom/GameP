@@ -71,6 +71,12 @@ public class BodyL
         BodyLMono.ResetPassiveMove();
     }
 
+
+    public int GetFixCastStunTime()
+    {
+        return _actL.GetFixCastStunTime();
+    }
+
     public void SpawnToPoint(PointMono point)
     {
         var transform = point.transform;
@@ -106,6 +112,7 @@ public class BodyL
         if (PauseTime > 0)
         {
             PauseTime -= BattleLogicMgr.upTickDeltaTimeMs;
+            //todo AnimationPause
             return;
         }
 
@@ -124,68 +131,24 @@ public class BodyL
             var statusBuff = statusBuffList[index];
             var upATick = statusBuff.UpATickAndCheckFinish();
             if (!upATick) continue;
-            statusBuffList.RemoveAt(index);
-            StatusBuffDict.Remove(statusBuff.SkillEffectConfig.Alias);
+            statusBuff.Release();
         }
     }
 
-    public void AddEffectOrBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
-    {
-        switch (skillEffectCfg.EffectType)
-        {
-            case EffectType.Push:
-                if (StunBuff is not CaughtBuff)
-                {
-                    AddStunBuff(skillEffectCfg, mediaL, fixTime);
-                }
-
-                break;
-            case EffectType.Pull:
-                if (StunBuff is not CaughtBuff)
-                {
-                    AddStunBuff(skillEffectCfg, mediaL, fixTime);
-                }
-
-                break;
-            case EffectType.Caught:
-                AddStunBuff(skillEffectCfg, mediaL, fixTime);
-                break;
-            case EffectType.StandardDamage:
-                MakeEffect(skillEffectCfg, mediaL);
-                break;
-            case EffectType.Lock:
-                break;
-            case EffectType.Undefine:
-            default:
-                AddStatusBuff(skillEffectCfg, mediaL, fixTime);
-                break;
-        }
-    }
-
-    private void MakeEffect(SkillEffectCfg skillEffectCfg, MediaL mediaL)
-    {
-        throw new NotImplementedException();
-    }
 
     private void AddStatusBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
     {
         var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL, fixTime);
-        var statusBuff = StatusBuff.Alloc(instanceBuffInfo);
-        StatusBuffDict.AddOrUpdate(statusBuff.SkillEffectConfig.Alias, statusBuff);
+        EffectExtension.Alloc(instanceBuffInfo, out var statusBuff);
+        StatusBuffDict.AddOrUpdate(statusBuff.SkillEffectConfig.Alias, statusBuff as StatusBuff);
     }
 
     private void AddStunBuff(SkillEffectCfg skillEffectCfg, MediaL mediaL, int fixTime)
     {
         var instanceBuffInfo = new InstanceBuffInfo(this, skillEffectCfg.Alias, mediaL, fixTime);
-        var addOk = StunBuffExtension.TryAllocAndOnAdd(instanceBuffInfo, out var aStunBuff);
-        if (!addOk)
-        {
-            return;
-        }
-
+        EffectExtension.Alloc(instanceBuffInfo, out var effectBuff);
         _actL.OnStun();
-        StunBuff = aStunBuff as IStunBuff;
-  
+        StunBuff = effectBuff as IStunBuff;
     }
 
     public bool CanInputAct()
@@ -206,33 +169,84 @@ public class BodyL
         }
 
 
-        if (mediaL.Cfg.MediaType is MediaType.Melee or MediaType.Range)
+        var result = _actL.JudgeBeAtk(mediaL);
+        switch (result)
         {
-            var result = _actL.JudgeBeAtk(mediaL);
-            switch (result)
+            case AtkResult.None:
+                break;
+            case AtkResult.SuccessOnStun:
+
+                break;
+            case AtkResult.Draw:
+                break;
+            case AtkResult.FailBeDodged:
+
+                break;
+            case AtkResult.FailBeParried: //
+                break;
+            case AtkResult.SuccessOnNormal:
+                _actL.BodyL.GetEffectFromMedia(mediaL);
+                break;
+            case AtkResult.SuccessOnBreak:
+                break;
+            case AtkResult.FailBeCountered:
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void GetEffectFromMedia(MediaL mediaL)
+    {
+        foreach (var cfgEffectAlia in mediaL.Cfg.EffectAlias)
+        {
+            var effectCfg = GameConfigs.Instance.Tables.TbEffectCfg.GetByAlias(cfgEffectAlia);
+            if (effectCfg == null)
             {
-                case AtkResult.None:
-                    break;
-                case AtkResult.SuccessOnStun:
-                    break;
-                case AtkResult.Draw:
-                    break;
-                case AtkResult.FailBeDodged:
-                    break;
-                case AtkResult.FailBeParried://
-                    break;
-                case AtkResult.SuccessOnNormal:
-                    break;
-                case AtkResult.SuccessOnBreak:
-                    break;
-                case AtkResult.FailBeCountered:
-                default:
-                    throw new ArgumentOutOfRangeException();
+                throw new Exception($"MediaCfg is null check cfg{cfgEffectAlia}");
+            }
+
+            var b = CanEffectAddToBody(effectCfg, mediaL, out var isStunBuff);
+            if (!b)
+            {
+                continue;
+            }
+
+            var effectBuff = EffectBuffExtensions.Alloc(cfgEffectAlia);
+            if (isStunBuff)
+            {
+                AddStunBuff(effectCfg, mediaL, mediaL.Owner.GetFixCastStunTime());
+            }
+            else
+            {
+                AddStatusBuff(effectCfg, mediaL, effectCfg.LastTime);
             }
         }
-        else if (mediaL.Cfg.MediaType is MediaType.Lock)
+    }
+
+    private bool CanEffectAddToBody(SkillEffectCfg effectCfg, MediaL mediaL, out bool stunBuff)
+    {
+        stunBuff = false;
+        var effectCfgBodyStatusFilter = (int)effectCfg.BodyStatusFilter & (int)BodyStatus;
+        var b = effectCfgBodyStatusFilter == 0;
+        if (b)
         {
+            return false;
         }
+
+        var b1 = IsStunBuff(effectCfg);
+        stunBuff = b1;
+        if (b1 && StunBuff is CaughtBuff caughtBuff)
+        {
+            if (caughtBuff.WhoCaught != mediaL.Owner)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsStunBuff(SkillEffectCfg effectCfg)
+    {
+        return effectCfg.EffectType is EffectType.Caught or EffectType.Pull or EffectType.Push;
     }
 
     public void DoSkillActMoveChange(MovementChangeCfg movementChangeCfg, int lastMoveTime)
@@ -269,6 +283,16 @@ public class BodyL
     {
         _actL.ForceLaunchSkill(triggerSkillId, actStatus);
     }
+
+    public void TakeDmg(MediaL buffInfoFromMedia)
+    {
+        int atk = buffInfoFromMedia.GatherAtk();
+    }
+
+    public int GatherAtk()
+    {
+return BodyValueStatus.GatherAtk();
+ }
 }
 
 

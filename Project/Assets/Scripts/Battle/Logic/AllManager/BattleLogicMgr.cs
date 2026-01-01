@@ -50,7 +50,6 @@ namespace Battle.Logic.AllManager
 
         public readonly DicPool<string, IEffectBuff> BuffPool = new();
 
-       
 
         public DicForEach<int, BodyL> InstanceIdToBodyDic = new();
 
@@ -133,21 +132,18 @@ namespace Battle.Logic.AllManager
                 new InstanceCharInfo(byAlias.Id, weaponTypeCfg.Id, playerId, BattleLogicConfig.PlayerTeam);
             var bodyL = BodyL.Alloc(instanceInfo);
             _localPlayerBody = bodyL;
-            InstanceIdToBodyDic.AddOrUpdate(playerId,bodyL);
-           
+            InstanceIdToBodyDic.AddOrUpdate(playerId, bodyL);
         }
 
         private void OnLocalAct(OpAction opAct)
         {
             if (_localPlayerBody == null) return;
-            if (!_localPlayerBody.CanInputAct())
-            {
-                return;
-            }
+            var canInputAct = _localPlayerBody.CanInputAct();
+
 
             if (InstanceIdToOperateDic.TryGetValue(_localPlayerId, out var operate))
             {
-                operate.OpAction = opAct;
+                operate.OpAction = canInputAct ? opAct : OpAction.None;
             }
         }
 

@@ -21,6 +21,7 @@ public sealed partial class SkillEffectCfg : Luban.BeanBase
         BodyStatusFilter = (BodyStatus)_buf.ReadInt();
         Desc = _buf.ReadString();
         EffectType = (EffectType)_buf.ReadInt();
+        LastTime = _buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Parameters = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); Parameters.Add(_e0);}}
     }
 
@@ -47,6 +48,10 @@ public sealed partial class SkillEffectCfg : Luban.BeanBase
     /// </summary>
     public readonly EffectType EffectType;
     /// <summary>
+    /// 持续时间
+    /// </summary>
+    public readonly int LastTime;
+    /// <summary>
     /// 参数
     /// </summary>
     public readonly System.Collections.Generic.List<int> Parameters;
@@ -66,6 +71,7 @@ public sealed partial class SkillEffectCfg : Luban.BeanBase
         + "BodyStatusFilter:" + BodyStatusFilter + ","
         + "desc:" + Desc + ","
         + "effectType:" + EffectType + ","
+        + "lastTime:" + LastTime + ","
         + "Parameters:" + Luban.StringUtil.CollectionToString(Parameters) + ","
         + "}";
     }

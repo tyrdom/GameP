@@ -39,7 +39,7 @@ namespace Battle.Logic.Effect
         private readonly ActStatus _actStatus;
         public BodyL BuffOnBodyL { get; set; }
 
-        private BodyL _whoCaught;
+        public BodyL WhoCaught;
 
         public SkillEffectCfg SkillEffectConfig { get; }
         public int RemainingTime { get; set; }
@@ -50,15 +50,15 @@ namespace Battle.Logic.Effect
 
         private int _nowPtIdx;
 
-        public bool TryOnAdd(InstanceBuffInfo buffInfo)
+        public void OnAdd(InstanceBuffInfo buffInfo)
         {
             RemainingTime = buffInfo.FixedTime;
             BuffOnBodyL = buffInfo.OnBodyL;
-            _whoCaught = buffInfo.FromMedia.Owner;
+            WhoCaught = buffInfo.FromMedia.Owner;
             BuffOnBodyL.SetRigidBodyActive(false);
             _nowPeriodicTime = 0;
             _nowGrabTime = 0;
-            var transform = _whoCaught.BodyLMono.transform;
+            var transform = WhoCaught.BodyLMono.transform;
             var transformPosition = transform.position;
             var transformRotation = transform.rotation;
             var position = transformPosition + _grabPoints[0].Pt;
@@ -67,7 +67,10 @@ namespace Battle.Logic.Effect
             BuffOnBodyL.BodyLMono.ForceSetPos(transform.TransformPoint(position));
             _nowPtIdx = 1;
 
-            return true;
+        }
+
+        public void OnRemove()
+        {
         }
 
         public bool CanInputAct()
@@ -88,11 +91,11 @@ namespace Battle.Logic.Effect
             _nowGrabTime += BattleLogicMgr.upTickDeltaTimeMs;
             if (_triggerSkillId != 0 && _nowGrabTime >= _triggerSkillTime)
             {
-                _whoCaught.ForceLaunchSkill(_triggerSkillId, _actStatus);
+                WhoCaught.ForceLaunchSkill(_triggerSkillId, _actStatus);
             }
 
             if (_nowPtIdx >= _grabPoints.Count) return false;
-            var caughtTrans = _whoCaught.BodyLMono.transform;
+            var caughtTrans = WhoCaught.BodyLMono.transform;
             _nowPeriodicTime += BattleLogicMgr.upTickDeltaTimeMs;
 
             var nowGrab = _grabPoints[_nowPtIdx];

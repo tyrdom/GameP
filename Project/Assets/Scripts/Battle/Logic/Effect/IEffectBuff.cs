@@ -1,4 +1,5 @@
 using System;
+using Battle.Logic.AllManager;
 using cfg;
 using cfg.battle;
 using Configs;
@@ -8,13 +9,15 @@ namespace Battle.Logic.Effect
     public interface IEffectBuff
 
     {
-        BodyL BuffOnBodyL { get; set; }
+        BodyL BuffOnBodyL { get; }
 
         bool UpATickAndCheckFinish();
         SkillEffectCfg SkillEffectConfig { get; }
 
         int RemainingTime { get; set; }
-        bool TryOnAdd(InstanceBuffInfo buffInfo);
+        void OnAdd(InstanceBuffInfo buffInfo);
+
+        void OnRemove();
     }
 
     public static class EffectBuffExtensions
@@ -36,8 +39,9 @@ namespace Battle.Logic.Effect
             };
         }
 
-        public static void Release(IEffectBuff obj)
+        public static void Release(this IEffectBuff obj)
         {
+            obj.OnRemove();
             switch (obj)
             {
                 case IStunBuff stunBuff:
@@ -53,6 +57,11 @@ namespace Battle.Logic.Effect
                     obj.BuffOnBodyL.RemoveStatusBuff(statusBuff);
                     break;
             }
+        }
+
+        public static IEffectBuff Alloc(string cfgEffectAlia)
+        {
+            return BattleLogicMgr.Instance.BuffPool.Allocate(cfgEffectAlia);
         }
     }
 }

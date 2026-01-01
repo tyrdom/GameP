@@ -18,6 +18,7 @@ namespace Battle.Logic.Media
     public class MediaL
     {
         public BodyL Owner = null;
+        
         public int InstanceId = -1;
         public readonly MediaCfg Cfg;
 
@@ -126,7 +127,7 @@ namespace Battle.Logic.Media
             }
             else
             {
-                Recycle();
+                Release();
             }
 
             MediaMono.UpATick();
@@ -171,8 +172,9 @@ namespace Battle.Logic.Media
             }
         }
 
-        private void Recycle()
+        private void Release()
         {
+            Owner.TempMediaList.Remove(this);
             BattleLogicMgr.Instance.MediaPool.Free(Cfg.Id, this);
         }
 
@@ -208,10 +210,7 @@ namespace Battle.Logic.Media
         }
 
 
-        public void GetOwner(out BodyL owner)
-        {
-            owner = Owner;
-        }
+      
 
 
         public bool CanLEffect(BodyL bodyL)
@@ -280,6 +279,11 @@ namespace Battle.Logic.Media
         public void AddTickHitBody(BodyL bodyL)
         {
             _triggerBodyLsThisTick.Add(bodyL);
+        }
+
+        public int GatherAtk()
+        {
+            return Owner.GatherAtk();
         }
     }
 

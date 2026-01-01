@@ -1,4 +1,5 @@
 using Battle.Logic.Media;
+using cfg;
 using cfg.battle;
 
 namespace Battle.Logic.Effect
@@ -8,9 +9,21 @@ namespace Battle.Logic.Effect
         public SkillEffectCfg SkillEffectConfig { get; }
         public int RemainingTime { get; set; }
 
-        public bool TryOnAdd(InstanceBuffInfo buffInfo)
+        public void OnAdd(InstanceBuffInfo buffInfo)
         {
-            throw new System.NotImplementedException();
+            switch (SkillEffectConfig.EffectType)
+            {
+                case EffectType.StandardDamage:
+                    buffInfo.OnBodyL.TakeDmg(buffInfo.FromMedia);
+                    break;
+                default:
+                    throw new System.NotImplementedException();
+            }
+        }
+
+        public void OnRemove()
+        {
+            
         }
 
         public BodyL BuffOnBodyL { get; set; }
